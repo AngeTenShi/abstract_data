@@ -72,7 +72,6 @@ namespace ft
                     pointer new_data = _alloc.allocate(2);
                     _array = new_data;
                     _capacity = 2;
-                    _size = 0;
                     return;
                 }
                 pointer new_data = _alloc.allocate(n);
@@ -146,23 +145,28 @@ namespace ft
                     --_size;
                 }
             }
+            iterator insert(const_iterator position, const value_type& val) {
+                size_type index = position - begin();
+                size_type n = 1;
+                insert(position, n, val);
+                return begin() + index;
+            }
             iterator    insert(const_iterator position, size_type n, const value_type& val)
             {
+                if (position < begin() || position > end())
+                    throw ft::out_of_range("vector::insert: position out of range");
                 if (n == 0)
-                    throw ft::out_of_range("vector::insert: n is 0");
+                    return (begin() + (position - begin()));
                 if (_size + n > _capacity)
                     reserve(_capacity == 0 ? 1 : _capacity * 2);
-                for (iterator i = end() - 1; i >= position; i--)
+                for (const_iterator i = end(); i >= position && i != begin(); i--)
+                {
                     _array[i - begin() + n] = *i;
+                }
                 for (size_type i = 0; i < n; i++)
                     _alloc.construct(_array + (position - begin()) + i, val);
                 _size += n;
                 return (begin() + (position - begin()));
-            }
-            iterator insert(const_iterator position, const value_type& val) {
-                size_type index = position - begin();
-                insert(position, 1, val);
-                return begin() + index;
             }
             template <class InputIterator>
             iterator insert(const_iterator position, InputIterator first, InputIterator last)
@@ -213,14 +217,6 @@ namespace ft
                 _size = 0;
             }
             /* CONSTRUCTORS */
-            template <class InputIterator> vector (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type())
-            {
-                _alloc = alloc;
-                _size = 0;
-                _capacity = 0;
-                _array = 0;
-                assign(first, last);
-            }
             explicit vector(const Alloc& alloc = Alloc()) : _size(0), _capacity(0), _alloc(alloc) {}
             explicit vector(size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type())
             {
@@ -236,6 +232,16 @@ namespace ft
                 _array = _alloc.allocate(_size);
                 for (size_type i = 0; i < _size; i++)
                     push_back(x._array[i]);
+            }
+            template <class InputIterator>
+            vector (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(),
+                    typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = 0)
+            {
+                _alloc = alloc;
+                _size = 0;
+                _capacity = 0;
+                _array = 0;
+                assign(first, last);
             }
             ~vector() 
             {

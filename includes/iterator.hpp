@@ -2,7 +2,7 @@
 #define CUSTOM_ITERATOR_HPP
 
 #include "utils.hpp"
-
+#include <iostream>
 namespace ft
 {
     template <class T>
@@ -20,14 +20,16 @@ namespace ft
             RandomAccessIterator() : _ptr(0) {}
             RandomAccessIterator(T* ptr) : _ptr(ptr) {}
             RandomAccessIterator(const RandomAccessIterator& other) : _ptr(other._ptr) {}
+            ~RandomAccessIterator() {}
+            // conversion from iterator to const_iterator RandomAccessIterator<int> to RandomAccessIterator<const int> for example
             template <class U>
-            RandomAccessIterator(const RandomAccessIterator<U>& other, ft::enable_if<ft::is_same<U, T>::value, void>::type* = 0) : _ptr(other._ptr) {}
+            RandomAccessIterator(const RandomAccessIterator<U>& other): _ptr(const_cast<T*>(other._ptr)) {}
             RandomAccessIterator& operator=(const RandomAccessIterator& other) {
                 _ptr = other._ptr;
                 return *this;
             }
             RandomAccessIterator& operator++() {
-                _ptr++;
+                ++_ptr;
                 return *this;
             }
             RandomAccessIterator operator++(int) {
@@ -36,7 +38,7 @@ namespace ft
                 return tmp;
             }
             RandomAccessIterator& operator--() {
-                _ptr--;
+                --_ptr;
                 return *this;
             }
             RandomAccessIterator operator--(int) {
@@ -65,16 +67,10 @@ namespace ft
             difference_type operator-(const RandomAccessIterator& other) const {
                 return _ptr - other._ptr;
             }
-            T& operator*() {
+            T& operator*() const {
                 return *_ptr;
             }
-            const T& operator*() const {
-                return *_ptr;
-            }
-            T* operator->() {
-                return _ptr;
-            }
-            const T* operator->() const {
+            T* operator->() const {
                 return _ptr;
             }
             bool operator==(const RandomAccessIterator& other) const {
@@ -93,6 +89,7 @@ namespace ft
                 return _ptr <= other._ptr;
             }
             bool operator>=(const RandomAccessIterator& other) const {
+                std::cout << "this: " << _ptr << " other: " << other._ptr << std::endl;
                 return _ptr >= other._ptr;
             }
             friend RandomAccessIterator operator+(difference_type n, const RandomAccessIterator& it) {
